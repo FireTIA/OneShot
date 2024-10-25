@@ -28,9 +28,24 @@ import statistics
 import csv
 from typing import Dict
 
-
 just_fix_windows_console()
 init(autoreset=True)
+
+#--- Settgins --->
+print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Получение настроек... \n")
+global OS_Target, Hide_Password_AP, Hide_Pin_AP, Hide_MAC_AP
+
+OS_Target = "NetHunter"   # NetHunter / Kali 
+Hide_Password_AP = "Half" # Прятает пароль на выводе экарана(Print()), да - True, нет - False, на половину - Half
+Hide_Pin_AP = "Half" # Прятает pin на выводе экарана(Print()), да - True, нет - False, на половину - Half 
+Hide_MAC_AP = "Half" # Прятает MAC адресс точки доступа на выводе экарана(Print()), да - True, нет - False, на половину - Half
+#--- Settings ---<
+
+
+#--- Временные переменные --->
+
+#--- Временные переменные ---<
+
 
 def Check_System_GET_OS():
     system = platform.system()
@@ -39,12 +54,8 @@ def Check_System_GET_OS():
         # Для получения информации о дистрибутиве Linux
         distro_info = f"{distro.name()} {distro.version()}"
         return f"{distro_info}"
-    elif system == "Windows":
-       
-        version = platform.version()
-        return f"Win \ {version}"
     else:
-        return f"OS \ {system}"
+        return f"OS | {system}"
 
 
 
@@ -52,7 +63,7 @@ def Check_System_GET_OS():
 print(f"| < {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET} - {Fore.LIGHTCYAN_EX}OneShotPin {Fore.LIGHTGREEN_EX}WPS{Fore.RESET}")
 print(f"| - Перевод от {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET}")
 print(f"| - Ваш дистрибутив: {Fore.LIGHTCYAN_EX}{Check_System_GET_OS()}{Fore.RESET}")
-print(f"| > {Fore.LIGHTMAGENTA_EX}0.0.51 - 2024.06 {Fore.YELLOW}BETA{Fore.RESET}")
+print(f"| > {Fore.LIGHTMAGENTA_EX}0.0.52 - 2024.10 {Fore.YELLOW}BETA{Fore.RESET}")
 
 
 
@@ -474,7 +485,7 @@ class Companion:
         self.generator = WPSpin()
 
     def __init_wpa_supplicant(self):
-        print(f'{Fore.GREEN}[{Fore.LIGHTCYAN_EX}*{Fore.GREEN}]{Fore.RESET} Running wpa_supplicant…')
+        print(f'{Fore.GREEN}[{Fore.LIGHTCYAN_EX}*{Fore.GREEN}]{Fore.RESET} Running {Fore.YELLOW}wpa_supplicant{Fore.RESET}…')
         cmd = 'wpa_supplicant -K -d -Dnl80211,wext,hostapd,wired -i{} -c{}'.format(self.interface, self.tempconf)
         self.wpas = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT, encoding='utf-8', errors='replace')
@@ -627,34 +638,30 @@ class Companion:
     def __credentialPrint(self, wps_pin=None, wpa_psk=None, essid=None, bssid=None):
         #FireSoft >
 
-        print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Получение настроек... ")
-
-
-        #--- Settgins --->
-        OS_Target = "NetHunter"   # NetHunter / Kali 
-        Hide_Password_AP = "False" # Прятает пароль на выводе экарана(Print()), да - True, нет - False, на половину - Half
-        Hide_Pin_AP = "False" # Прятает pin на выводе экарана(Print()), да - True, нет - False, на половину - Half
-        #--- Settings ---<
-
-
+        print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Получение настроек и аргументов... \n")
         
-        
-        if Hide_Pin_AP == "True":
-            Hiden_WPS_PIN = '*' * len(wps_pin)
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{Hiden_WPS_PIN}{Fore.RESET}'")
-        elif Hide_Pin_AP == "Half":
-            half_length = len(wps_pin) // 2
-            Hiden_Half_WPS_PIN = '*' * half_length + wps_pin[half_length:]
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{Hiden_Half_WPS_PIN}{Fore.RESET}'")
+        if Hide_Pin_AP in ["True", "true"]:
+            if wps_pin == "<PBC mode>":
+                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.GREEN} <PBC mode> {Fore.LIGHTYELLOW_EX}*{Fore.RESET}' ")
+            else:
+                Hiden_WPS_PIN = '*' * len(wps_pin)
+                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX} {Hiden_WPS_PIN} {Fore.RESET}' ")
+        elif Hide_Pin_AP in ["Half", "half"]:
+            if wps_pin == "<PBC mode>":
+                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.GREEN} <PBC mode> {Fore.LIGHTYELLOW_EX}**{Fore.RESET}' ")
+            else:
+                half_length = len(wps_pin) // 2
+                Hiden_Half_WPS_PIN = '*' * half_length + wps_pin[half_length:]
+                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{Hiden_Half_WPS_PIN}{Fore.RESET}'")
         else:
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{wpa_psk}{Fore.RESET}'")
+            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{wps_pin}{Fore.RESET}'")
         
         #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{wps_pin}{Fore.RESET}'")
 
-        if Hide_Password_AP == "True":
+        if Hide_Password_AP in ["True", "true"]:
             Hiden_WPA_PSK = '*' * len(wpa_psk)
             print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{Hiden_WPA_PSK}{Fore.RESET}'")
-        elif Hide_Password_AP == "Half":
+        elif Hide_Password_AP in ["Half", "half"]:
             half_length = len(wpa_psk) // 2
             Hiden_Half_WPA_PSK = '*' * half_length + wpa_psk[half_length:]
             print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{Hiden_Half_WPA_PSK}{Fore.RESET}'")
@@ -664,7 +671,18 @@ class Companion:
         #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{wpa_psk}{Fore.RESET}'")
 
         print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP SSID(WiFi-Имя): '{Fore.LIGHTGREEN_EX}{essid}{Fore.RESET}'")
-        print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{bssid}{Fore.RESET}'")
+
+        if Hide_MAC_AP in ["True", "true"]:
+            Hiden_MAC_AP = '*' * len(bssid)
+            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{Hiden_MAC_AP}{Fore.RESET}'")
+        elif Hide_MAC_AP in ["Half", "half"]:
+            half_length = len(bssid) // 2
+            Hiden_Half_MAC_AP = '*' * half_length + bssid[half_length:]
+            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{Hiden_Half_MAC_AP}{Fore.RESET}'")
+        else:
+            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{bssid}{Fore.RESET}'")
+
+        #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{bssid}{Fore.RESET}'")
         
 
 
@@ -681,7 +699,7 @@ class Companion:
             folder_OSP = "root/OneShotPin_Log"
 
         #Проверяет есть ли папка если нету то создается папка!
-        print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Поиск папки '{Fore.LIGHTCYAN_EX}OneShotPin_Log{Fore.RESET}'... ")
+        print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Поиск папки '{Fore.LIGHTCYAN_EX}OneShotPin_Log{Fore.RESET}'... ")
         if not os.path.exists(folder_OSP):
             print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Создание папки '{Fore.LIGHTCYAN_EX}OneShotPin_Log{Fore.RESET}'... ")
             os.makedirs(folder_OSP)
@@ -720,7 +738,7 @@ class Companion:
             
             file_path = os.path.join(folder_OSP, file_name)
         
-            location_hack = input(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Введите локацию взлома :{Fore.LIGHTCYAN_EX} ")
+            location_hack = input(f" {Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Введите локацию взлома :{Fore.LIGHTCYAN_EX} ")
             print(f"{Fore.RESET}")
             
             if type_save == "Update_new_wn":
@@ -854,7 +872,7 @@ class Companion:
         self.wpas.stdout.read(300)   # Clean the pipe 
         if pbc_mode:
             if bssid:
-                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}*{Fore.GREEN}]{Fore.RESET} Запуск соединения  по кнопке WPS с точкой доступа {bssid}…")
+                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}*{Fore.GREEN}]{Fore.RESET} Запуск соединения по кнопке WPS с точкой доступа {Fore.LIGHTYELLOW_EX}{bssid}{Fore.RESET}…")
                 cmd = f'WPS_PBC {bssid}'
             else:
                 print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}*{Fore.GREEN}]{Fore.RESET} Запуск соединения по кнопке WPS…")
@@ -1225,7 +1243,7 @@ class WiFiScanner:
             return
         while 1:
             try:
-                networkNo = input('Select target (press Enter to refresh): ')
+                networkNo = input('Выберите цель (Enter обновление списка): ')
                 if networkNo.lower() in ('r', '0', ''):
                     return self.prompt_network()
                 elif int(networkNo) in networks.keys():
@@ -1233,7 +1251,7 @@ class WiFiScanner:
                 else:
                     raise IndexError
             except Exception:
-                print('Invalid number')
+                print('Неправильное число')
 
     def scan_network(self) -> str:
         networks = self.iw_scanner()
@@ -1261,7 +1279,7 @@ def die(msg):
 
 def usage():
     return """
-OneShotPin 0.0.2 (c) 2017 rofl0r, modded by drygdryg | FireSoft 0.0.5 - 2024.04 
+OneShotPin 0.0.2 (c) 2017 rofl0r, modded by drygdryg | FireSoft 0.0.52 - 2024.10 BETA
 
 %(prog)s <параметр>
 
@@ -1296,7 +1314,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(
-        description=f'{Fore.LIGHTCYAN_EX}OneShotPin 0.0.2{Fore.RESET} (c) 2017 rofl0r, modded by drygdryg | {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET} {Fore.LIGHTGREEN_EX}0.0.5 - 2024.04{Fore.RESET}',
+        description=f'{Fore.LIGHTCYAN_EX}OneShotPin 0.0.2{Fore.RESET} (c) 2017 rofl0r, modded by drygdryg | {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET} {Fore.LIGHTGREEN_EX}0.0.52 - 2024.10{Fore.RESET}',
         epilog='Пример: %(prog)s -i wlan0 -b 00:90:4C:C1:AC:21 -K'
         )
 
@@ -1388,7 +1406,7 @@ if __name__ == '__main__':
     if sys.hexversion < 0x03060F0:
         die(f"{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Данный скрипт может быть запущен от Python 3.6 и выше!")
     if os.getuid() != 0:
-        die(f"{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Запустите скрипт с Root правами!")
+        die(f"{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Запустите скрипт с Root правами(Sudo su)!")
 
     if not ifaceUp(args.interface):
         die('Не удалось включить интерфейс(wlan) "{}"'.format(args.interface))
