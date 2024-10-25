@@ -52,6 +52,8 @@
 ---
 
 ## Скриншоты скрипта
-- Скоро... 
+- Подключение по WPS Button
+![Screen](https://github.com/user-attachments/assets/776ca8a8-4e0c-4b62-b2a7-37ed8c73ec02)
+
 
 
