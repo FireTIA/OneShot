@@ -55,12 +55,6 @@
 - Подключение по WPS Button
 ![image](https://github.com/user-attachments/assets/f2c8d907-7551-4efc-b5e6-7fa14a4a8d77)
 
-- Запуск скрипта (ожидается в версии 0.60 BETA)
-  <img width="839" height="795" alt="vmware_AkU2f5W1gG" src="https://github.com/user-attachments/assets/22ec5207-a9b7-4ec8-8720-9e13a9dff67b" />
-
-- Поиск сетей (ожидается в версии 0.60 BETA)
-  <img width="1024" height="794" alt="vmware_mCIMXgdhnl" src="https://github.com/user-attachments/assets/7805e0f1-aaf3-46f7-97ce-cc3ff7d35855" />
-
 
 
 
