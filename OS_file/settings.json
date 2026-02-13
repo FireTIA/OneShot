@@ -1,0 +1,9 @@
+{
+    "OS_Target": "NetHunter",
+    "Hide_Password_AP": "Half",
+    "Hide_Pin_AP": "Half",
+    "Hide_MAC_AP": "Half",
+    "Change_MAC_WlanX_Startup": true,
+    "Macchanger_Output_Mode": "pretty",
+    "Hello_banner": "default"
+}
