@@ -55,6 +55,9 @@
 - Подключение по WPS Button
 ![image](https://github.com/user-attachments/assets/f2c8d907-7551-4efc-b5e6-7fa14a4a8d77)
 
+---
+⚠️ Legal Disclaimer: This tool is for educational and authorized testing purposes only. Only use on networks you own or have explicit permission to test. Unauthorized access to computer networks is illegal.
+⚠️ Юридический отказ от ответственности: этот инструмент предназначен только для образовательных целей и авторизованного тестирования. Используйте его только в сетях, которые принадлежат вам, или где у вас есть явное разрешение на проведение тестов. Несанкционированный доступ к компьютерным сетям является незаконным.
 
 
 
