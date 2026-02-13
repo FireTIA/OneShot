@@ -42,6 +42,9 @@
   <img width="1024" height="794" alt="vmware_mCIMXgdhnl" src="https://github.com/user-attachments/assets/7805e0f1-aaf3-46f7-97ce-cc3ff7d35855" />
 
 
+---
+⚠️ Legal Disclaimer: This tool is for educational and authorized testing purposes only. Only use on networks you own or have explicit permission to test. Unauthorized access to computer networks is illegal.
+⚠️ Юридический отказ от ответственности: этот инструмент предназначен только для образовательных целей и авторизованного тестирования. Используйте его только в сетях, которые принадлежат вам, или где у вас есть явное разрешение на проведение тестов. Несанкционированный доступ к компьютерным сетям является незаконным.
 
 
 
