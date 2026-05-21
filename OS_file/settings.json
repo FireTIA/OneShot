@@ -1,0 +1,12 @@
+{
+    "OS_Target": "kali",
+    "Hide_Password_AP": "False",
+    "Hide_Pin_AP": "False",
+    "Hide_MAC_AP": "False",
+    "Change_MAC_WlanX_Startup": "True-r",
+    "Macchanger_Output_Mode": "pretty",
+    "Hello_banner": "default",
+    "Check_Corp_AP_Action": null,
+    "Check_Corp_AP_lTX_Value": null,
+    "Check_Corp_AP_Recheck_After_lTX": null
+}
