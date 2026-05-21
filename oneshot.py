@@ -1,47 +1,90 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
-import subprocess
-import os
-import tempfile
+try:
+    # OneShot Lib >
+    import sys
+    import subprocess
+    import os
+    import tempfile
+    import shutil
+    import re
+    import codecs
+    import socket
+    import pathlib
+    from pathlib import Path
+    import time
+    from datetime import datetime
+    import datetime
+    import collections
+    import statistics
+    import csv
+    from typing import Dict
+    # < OneShot Lib
 
-# FireSoft >
-import colorama
-from colorama import Fore, Back, Style
-from colorama import just_fix_windows_console
-from colorama import init
-import platform
-import distro
-import random
-# < FireSoft
+    # FireSoft Lib >
+    import colorama
+    from colorama import Fore, Back, Style
+    from colorama import init
+    import platform
+    import distro
+    import random
 
-import shutil
-import re
-import codecs
-import socket
-import pathlib
-from pathlib import Path
-import time
-from datetime import datetime
-import datetime
-import collections
-import statistics
-import csv
-from typing import Dict
+    init(autoreset=True)
+
+    # < FireSoft Lib
+except ImportError as e:
+    exit(f"[ERR] Ошибка при импорте основных библиотек, необходимых для работы скрипта! \n {e} \n")
 
 # > FireSoft
-just_fix_windows_console()
-init(autoreset=True)
+
 
 # FireSoft Modules >
-from OS_file.cli_gui import CLI_GUI__Banner_info, CLI_GUI__Banner_startup, CLI_GUI__MENU
-CLI_GUI__Banner_startup()
-from OS_file.db import USB_MAP, PCI_MAP, fun_notice_dev
-from OS_file.settings import SETT__load_param, settings__init_module
-settings__init_module()
-from OS_file.wlanx import WlanX__Check_Corp_AP, WlanX__Mac_Change, WlanX__get_wifi_driver, WlanX__detect_chipset_airmon_style, WlanX__Adapter_info_get, WlanX__init_module
-WlanX__init_module()
+try:
+    from OS_file.cli_gui import (
+        CLI_GUI__Banner_info,
+        CLI_GUI__Banner_startup,
+        CLI_GUI__MENU,
+        CLI_GUI__Out_Write_result_test,
+    )
+    CLI_GUI__Banner_startup()
+
+    from OS_file.db import (
+        USB_MAP,
+        PCI_MAP,
+        fun_notice_dev,
+        OneShot_ver,
+        OneShot_ver_date,
+        OneShot_ver_type,
+    )
+
+    from OS_file.settings import (
+        SETT__load_param,
+        settings__init_module,
+    )
+    settings__init_module()
+
+    from OS_file.wlanx import (
+        WlanX__Check_Corp_AP,
+        WlanX__Mac_Change,
+        WlanX__get_wifi_driver,
+        WlanX__detect_chipset_airmon_style,
+        WlanX__Adapter_info_get,
+        WlanX__init_module,
+    )
+    WlanX__init_module()
+
+except ImportError as e:
+    print(f"{Fore.YELLOW}[INFO] FireSoft-модули пропущены, продолжаем работу без них включая дополнительные фичи.{Fore.RESET}")
+    time.sleep(4)
+    print(f"{Back.WHITE}{Fore.RED}[WARN] Не удалось импортировать модуль:{Fore.RESET}{Back.RESET} {e}")
+
+    OneShot_ver = "N/A"
+    OneShot_ver_date = "N/A"
+    OneShot_ver_type = "N/A"
+
+    Warn_msg = "[WARN-FS] "
+
 
 # < FireSoft Modules
 
@@ -483,8 +526,31 @@ class Companion:
         self.wpas = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT, encoding='utf-8', errors='replace')
         # Waiting for wpa_supplicant control interface initialization
+        timeout_seconds = 15
+        started_at = time.time()
         while not os.path.exists(self.wpas_ctrl_path):
-            pass
+            if self.wpas.poll() is not None:
+                wpas_output = self.wpas.stdout.read() if self.wpas.stdout else ''
+                error_tail = '\n'.join(wpas_output.splitlines()[-10:]).strip()
+                error_msg = (
+                    f'{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} '
+                    f'{Fore.LIGHTBLUE_EX}wpa_supplicant{Fore.RESET} завершился до инициализации control interface '
+                    f'для {Fore.LIGHTCYAN_EX}{self.interface}{Fore.RESET}.'
+                )
+                if error_tail:
+                    error_msg += f'\n{Fore.YELLOW}[debug]{Fore.RESET}\n{error_tail}'
+                raise RuntimeError(error_msg)
+
+            if time.time() - started_at >= timeout_seconds:
+                error_msg = (
+                    f'{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} '
+                    f'Таймаут ожидания запуска {Fore.LIGHTBLUE_EX}wpa_supplicant{Fore.RESET}: '
+                    f'control interface не появился за {timeout_seconds} секунд '
+                    f'для {Fore.LIGHTCYAN_EX}{self.interface}{Fore.RESET}.'
+                )
+                raise TimeoutError(error_msg)
+
+            time.sleep(0.05)
 
     def sendOnly(self, command):
         """Sends command to wpa_supplicant"""
@@ -630,178 +696,17 @@ class Companion:
 
     def __credentialPrint(self, wps_pin=None, wpa_psk=None, essid=None, bssid=None):
         #FireSoft >
+        try: 
+            CLI_GUI__Out_Write_result_test(wps_pin, wpa_psk, essid, bssid)
 
-        print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Получение настроек и аргументов... \n")
-        
-        if SETT__load_param()["Hide_Pin_AP"] in ["True", "true"]:
-            if wps_pin == "<PBC mode>":
-                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.GREEN} <PBC mode> {Fore.LIGHTYELLOW_EX}*{Fore.RESET}' ")
-            else:
-                Hiden_WPS_PIN = '*' * len(wps_pin)
-                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX} {Hiden_WPS_PIN} {Fore.RESET}' ")
-        elif SETT__load_param()["Hide_Pin_AP"] in ["Half", "half"]:
-            if wps_pin == "<PBC mode>":
-                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.GREEN} <PBC mode> {Fore.LIGHTYELLOW_EX}**{Fore.RESET}' ")
-            else:
-                half_length = len(wps_pin) // 2
-                Hiden_Half_WPS_PIN = '*' * half_length + wps_pin[half_length:]
-                print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{Hiden_Half_WPS_PIN}{Fore.RESET}'")
-        else:
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{wps_pin}{Fore.RESET}'")
-        
-        #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{wps_pin}{Fore.RESET}'")
-
-        if SETT__load_param()["Hide_Password_AP"] in ["True", "true"]:
-            Hiden_WPA_PSK = '*' * len(wpa_psk)
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{Hiden_WPA_PSK}{Fore.RESET}'")
-        elif SETT__load_param()["Hide_Password_AP"] in ["Half", "half"]:
-            half_length = len(wpa_psk) // 2
-            Hiden_Half_WPA_PSK = '*' * half_length + wpa_psk[half_length:]
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{Hiden_Half_WPA_PSK}{Fore.RESET}'")
-        else:
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{wpa_psk}{Fore.RESET}'")
-        
-        #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{wpa_psk}{Fore.RESET}'")
-
-        print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP SSID(WiFi-Имя): '{Fore.LIGHTGREEN_EX}{essid}{Fore.RESET}'")
-
-        if SETT__load_param()["Hide_MAC_AP"] in ["True", "true"]:
-            Hiden_MAC_AP = '*' * len(bssid)
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{Hiden_MAC_AP}{Fore.RESET}'")
-        elif SETT__load_param()["Hide_MAC_AP"] in ["Half", "half"]:
-            half_length = len(bssid) // 2
-            Hiden_Half_MAC_AP = '*' * half_length + bssid[half_length:]
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{Hiden_Half_MAC_AP}{Fore.RESET}'")
-        else:
-            print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{bssid}{Fore.RESET}'")
-
-        #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{bssid}{Fore.RESET}'")
-        
-
-
-
-        #> Работа с дерикториями и папками 
-        #Проверяет какая система, и от этого уже будет указан путь сохранения.
-        if SETT__load_param()["OS_Target"] == "NetHunter":
-            folder_OSP = "/sdcard/nh_files/OneShotPin_Log"
-        
-        elif SETT__load_param()["OS_Target"] == "Kali":
-            folder_OSP = "/home/kali/OneShotPin_Log"
-        
-        else:
-            folder_OSP = "root/OneShotPin_Log"
-
-        #Проверяет есть ли папка если нету то создается папка!
-        print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Поиск папки '{Fore.LIGHTCYAN_EX}OneShotPin_Log{Fore.RESET}'... ")
-        if not os.path.exists(folder_OSP):
-            print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Создание папки '{Fore.LIGHTCYAN_EX}OneShotPin_Log{Fore.RESET}'... ")
-            os.makedirs(folder_OSP)
-        #< Работа с дерикториями и папками 
-
-
-        
-        #> Проверка есть ли ранее проверенная wifi сеть, по MAC адрессу.
-        def search_wifi_mac(bssid):
-            
-            formatted_bssid = bssid.replace(":", "-")
-
-            for filename in os.listdir(folder_OSP):
-                if formatted_bssid in filename:
-                    return filename
-                
-            return None
-        #< Проверка есть ли ранее проверенная wifi сеть, по MAC адрессу.
-        
-
-
-        #> Сохранение лога
-        def save_log(wps_pin, wpa_psk, essid, bssid, type_save):
-            current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            current_datetime_text = datetime.datetime.now().strftime("%Y-%m-%d / %H-%M-%S")
-            formatted_bssid_file = bssid.replace(":", "-")
-
-            if type_save == "Update_new_wn":
-                file_name = f"{formatted_bssid_file}=UP={current_datetime}.OSP_Complete"
-            elif type_save == "Save_new_wn":
-                file_name = f"{formatted_bssid_file}={current_datetime}.OSP_Complete"
-            else:
-                #ER02
-                print(f"\n \n \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER02!!! \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER02!!! \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER02!!!")
-                exit()
-            
-            file_path = os.path.join(folder_OSP, file_name)
-        
-            location_hack = input(f" {Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Введите локацию тестирования :{Fore.LIGHTCYAN_EX} ")
-            print(f"{Fore.RESET}")
-            
-            if type_save == "Update_new_wn":
-                content = [
-                    f"Status: Повторный тест | Retest ",
-                    f"WPS PIN: {wps_pin}",
-                    f"WPA PSK(Password): {wpa_psk}",
-                    f"AP SSID(WiFi-Name): {essid}",
-                    f"AP BSSID(WiFi-MAC): {bssid}",
-                    f"Date/Time : {current_datetime_text}",
-                    f"Location: {location_hack}"
-                ]
-            elif type_save == "Save_new_wn":
-                content = [
-                    f"Status: Впервые протестированно | First tested ",
-                    f"WPS PIN: {wps_pin}",
-                    f"WPA PSK(Password): {wpa_psk}",
-                    f"AP SSID(WiFi-Name): {essid}",
-                    f"AP BSSID(WiFi-MAC): {bssid}",
-                    f"Date/Time : {current_datetime_text}",
-                    f"Location: {location_hack}"
-                ]
-            else:
-                #ER03
-                print(f"\n \n \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER03!!! \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER03!!! \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER03!!!")
-                exit()
-            
-            
-
-            with open(file_path, 'w') as file:
-                for line in content:
-                    file.write(line + '\n')
-            print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Результат тестирования записан в файл '{Fore.LIGHTCYAN_EX}{folder_OSP}/{file_name}{Fore.RESET}'... ")
-       
-        #< Сохранение лога
-
-
-
-        Scan_Files_OSP = search_wifi_mac(bssid)
-
-        if Scan_Files_OSP:
-            print(f"\n {Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Найдено ранее проверенная сеть: {Fore.LIGHTCYAN_EX}'{Scan_Files_OSP}'{Fore.RESET} \n")
-            print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Сохранить новый лог? {Fore.RESET}")
-            print(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Доступные варианты: {Fore.LIGHTCYAN_EX}y{Fore.RESET}, {Fore.LIGHTCYAN_EX}n{Fore.RESET}, {Fore.LIGHTCYAN_EX}yes{Fore.RESET}, {Fore.LIGHTCYAN_EX}no{Fore.RESET}, {Fore.LIGHTCYAN_EX}д{Fore.RESET}, {Fore.LIGHTCYAN_EX}н{Fore.RESET}")
-            select_1 = input(f"{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} >> {Fore.LIGHTCYAN_EX}")
-            
-            if select_1 in ["y", "yes", "Y", "Yes", "YES", "yES", "д", "да", "Д", "Да", "ДА", "дА"]:
-                print(f"{Fore.RESET}")
-                type_save = "Update_new_wn"
-                save_log(wps_pin, wpa_psk, essid, bssid, type_save)
-            elif select_1 in ["n", "no", "not", "N", "No", "Not", "н", "не", "нет", "Н", "Не", "Нет"]:
-                print(f"{Fore.RESET}")
-                print(f"\n{Fore.LIGHTBLUE_EX}Выход...")
-
-            else:
-                print(f"{Fore.RESET}")
-        
-        elif Scan_Files_OSP == None:
-            type_save = "Save_new_wn"
-            save_log(wps_pin, wpa_psk, essid, bssid, type_save)
-        
-        else:
-            #ER1
-            print(f"\n \n \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER1!!! \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER1!!! \n{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Произошла ошибка в скрипте ER1!!!")
-            exit()
-
-        
-        
-
-        
+        except NameError as e:
+            print(f"{Warn_msg}: {e}")
+            print(f"""
+WPS PIN: {Fore.LIGHTGREEN_EX}{wps_pin}{Fore.RESET}
+WPA PSK: {Fore.LIGHTGREEN_EX}{wpa_psk}{Fore.RESET}
+ESSID  : {Fore.LIGHTGREEN_EX}{essid}  {Fore.RESET}
+BSSID  : {Fore.LIGHTGREEN_EX}{bssid}  {Fore.RESET}
+            """)
         # < FireSoft
 
     def __saveResult(self, bssid, essid, wps_pin, wpa_psk):
@@ -1308,8 +1213,8 @@ def die(msg):
 
 
 def usage():
-    return """
-OneShotPin 0.0.2 (c) 2017 rofl0r, modded by drygdryg | FireSoft 0.0.57 - 2026.02 BETA
+    return f"""
+OneShotPin 0.0.2 (c) 2017 rofl0r, modded by drygdryg | FireSoft {OneShot_ver} - {OneShot_ver_date} {OneShot_ver_type}
 
 %(prog)s <параметр>
 
@@ -1346,7 +1251,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(
-        description=f'{Fore.LIGHTCYAN_EX}OneShotPin 0.0.2{Fore.RESET} (c) 2017 rofl0r, modded by drygdryg | {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET} {Fore.LIGHTGREEN_EX}0.0.57 - 2026.02{Fore.RESET}',
+        description=f'{Fore.LIGHTCYAN_EX}OneShotPin 0.0.2{Fore.RESET} (c) 2017 rofl0r, modded by drygdryg | {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET} {Fore.LIGHTGREEN_EX}{OneShot_ver} - {OneShot_ver_date} {OneShot_ver_type}{Fore.RESET}',
         epilog='Пример: %(prog)s -i wlan0 -b 00:90:4C:C1:AC:21 -K'
         )
     
@@ -1450,7 +1355,11 @@ if __name__ == '__main__':
     if args.menu:
         CLI_GUI__MENU(args.interface)
 
-    WlanX__Mac_Change(args.interface, SETT__load_param()["Change_MAC_WlanX_Startup"])
+    try:
+        WlanX__Mac_Change(args.interface, SETT__load_param()["Change_MAC_WlanX_Startup"])
+    except NameError as e:
+        print(f"{Warn_msg}: {e}")
+
 
     if nm_was_active is None:           # записываем только один раз
         nm_was_active = is_nm_active()
@@ -1460,10 +1369,15 @@ if __name__ == '__main__':
         die('Не удалось включить интерфейс(wlan) "{}"'.format(args.interface))
 
     # > FireSoft
-    CLI_GUI__Banner_info(args.interface)
-    
-    WlanX__Check_Corp_AP(3, 4, args.interface)
-    
+    try:
+        CLI_GUI__Banner_info(args.interface)
+    except NameError as e:
+        print(f"{Warn_msg}: {e}")
+
+    try:
+        WlanX__Check_Corp_AP(3, 4, args.interface)
+    except NameError as e:
+        print(f"{Warn_msg}: {e}")
     # < FireSoft
 
 
@@ -1518,3 +1432,13 @@ if __name__ == '__main__':
 
     if args.iface_down:
         ifaceUp(args.interface, down=True)
+
+
+
+# Заметки: 
+# Ожидание wpa_supplicant для управление интерфейсом - управление на 531 строке
+#
+#
+#
+#
+#
