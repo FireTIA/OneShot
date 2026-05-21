@@ -1,5 +1,5 @@
 OneShot_ver = "0.0.60"
-OneShot_ver_date = "2026.03"
+OneShot_ver_date = "2026.05"
 OneShot_ver_type = "BETA"
 OneShot_ver_type_short = "b"
 
