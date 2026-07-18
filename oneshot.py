@@ -20,9 +20,7 @@ import codecs
 import socket
 import pathlib
 import time
-import datetime
 from datetime import datetime
-import datetime
 import collections
 import statistics
 import csv
@@ -31,39 +29,11 @@ from typing import Dict
 just_fix_windows_console()
 init(autoreset=True)
 
-#--- Settgins --->
 print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Получение настроек... \n")
-global OS_Target, Hide_Password_AP, Hide_Pin_AP, Hide_MAC_AP
-
-OS_Target = "NetHunter"   # NetHunter / Kali 
-Hide_Password_AP = "Half" # Прятает пароль на выводе экарана(Print()), да - True, нет - False, на половину - Half
-Hide_Pin_AP = "Half" # Прятает pin на выводе экарана(Print()), да - True, нет - False, на половину - Half 
-Hide_MAC_AP = "Half" # Прятает MAC адресс точки доступа на выводе экарана(Print()), да - True, нет - False, на половину - Half
-#--- Settings ---<
-
-
-#--- Временные переменные --->
-
-#--- Временные переменные ---<
-
-
-def Check_System_GET_OS():
-    system = platform.system()
-    
-    if system == "Linux":
-        # Для получения информации о дистрибутиве Linux
-        distro_info = f"{distro.name()} {distro.version()}"
-        return f"{distro_info}"
-    else:
-        return f"OS | {system}"
-
-
-
-
-print(f"| < {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET} - {Fore.LIGHTCYAN_EX}OneShotPin {Fore.LIGHTGREEN_EX}WPS{Fore.RESET}")
-print(f"| - Перевод от {Fore.YELLOW}Fire{Fore.LIGHTRED_EX}Soft{Fore.RESET}")
-print(f"| - Ваш дистрибутив: {Fore.LIGHTCYAN_EX}{Check_System_GET_OS()}{Fore.RESET}")
-print(f"| > {Fore.LIGHTMAGENTA_EX}0.0.52 - 2024.10 {Fore.YELLOW}BETA{Fore.RESET}")
+from OS_Files.settings import OS_TARGET, CUSTOM_PATH_FOLDER, HIDE_PASSWORD_AP, HIDE_PIN_AP, HIDE_MAC_AP, MACCHANGER_STARTUP_CHANGE
+from OS_Files.oss import Check_System_GET_OS
+from OS_Files.tui import banner
+from OS_Files.wlanx_termux import WLANX__toggle_android_wifi, WlanX__Mac_Change
 
 
 
@@ -640,13 +610,13 @@ class Companion:
 
         print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Получение настроек и аргументов... \n")
         
-        if Hide_Pin_AP in ["True", "true"]:
+        if HIDE_PIN_AP in ["True", "true"]:
             if wps_pin == "<PBC mode>":
                 print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.GREEN} <PBC mode> {Fore.LIGHTYELLOW_EX}*{Fore.RESET}' ")
             else:
                 Hiden_WPS_PIN = '*' * len(wps_pin)
                 print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX} {Hiden_WPS_PIN} {Fore.RESET}' ")
-        elif Hide_Pin_AP in ["Half", "half"]:
+        elif HIDE_PIN_AP in ["Half", "half"]:
             if wps_pin == "<PBC mode>":
                 print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.GREEN} <PBC mode> {Fore.LIGHTYELLOW_EX}**{Fore.RESET}' ")
             else:
@@ -658,10 +628,10 @@ class Companion:
         
         #print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPS PIN: '{Fore.LIGHTGREEN_EX}{wps_pin}{Fore.RESET}'")
 
-        if Hide_Password_AP in ["True", "true"]:
+        if HIDE_PASSWORD_AP in ["True", "true"]:
             Hiden_WPA_PSK = '*' * len(wpa_psk)
             print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{Hiden_WPA_PSK}{Fore.RESET}'")
-        elif Hide_Password_AP in ["Half", "half"]:
+        elif HIDE_PASSWORD_AP in ["Half", "half"]:
             half_length = len(wpa_psk) // 2
             Hiden_Half_WPA_PSK = '*' * half_length + wpa_psk[half_length:]
             print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} WPA PSK(Пароль): '{Fore.LIGHTGREEN_EX}{Hiden_Half_WPA_PSK}{Fore.RESET}'")
@@ -672,10 +642,10 @@ class Companion:
 
         print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP SSID(WiFi-Имя): '{Fore.LIGHTGREEN_EX}{essid}{Fore.RESET}'")
 
-        if Hide_MAC_AP in ["True", "true"]:
+        if HIDE_MAC_AP in ["True", "true"]:
             Hiden_MAC_AP = '*' * len(bssid)
             print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{Hiden_MAC_AP}{Fore.RESET}'")
-        elif Hide_MAC_AP in ["Half", "half"]:
+        elif HIDE_MAC_AP in ["Half", "half"]:
             half_length = len(bssid) // 2
             Hiden_Half_MAC_AP = '*' * half_length + bssid[half_length:]
             print(f"{Fore.GREEN}[{Fore.LIGHTCYAN_EX}+{Fore.GREEN}]{Fore.RESET} AP BSSID(WiFi-MAC): '{Fore.LIGHTGREEN_EX}{Hiden_Half_MAC_AP}{Fore.RESET}'")
@@ -689,14 +659,14 @@ class Companion:
 
         #> Работа с дерикториями и папками 
         #Проверяет какая система, и от этого уже будет указан путь сохранения.
-        if OS_Target == "NetHunter":
-            folder_OSP = "/sdcard/nh_files/OneShotPin_Log"
+        if OS_TARGET.lower() in ['termux', 'ter', 't']:
+            folder_OSP = "/sdcard/termux_files/OneShotPin_Log"
         
-        elif OS_Target == "Kali":
-            folder_OSP = "/home/kali/OneShotPin_Log"
+        elif OS_TARGET.lower() in ['custom', 'cus', 's']:
+            folder_OSP = CUSTOM_PATH_FOLDER
         
         else:
-            folder_OSP = "root/OneShotPin_Log"
+            folder_OSP = "/root/OneShotPin_Log"
 
         #Проверяет есть ли папка если нету то создается папка!
         print(f"\n{Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Поиск папки '{Fore.LIGHTCYAN_EX}OneShotPin_Log{Fore.RESET}'... ")
@@ -723,8 +693,8 @@ class Companion:
 
         #> Сохранение лога
         def save_log(wps_pin, wpa_psk, essid, bssid, type_save):
-            current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            current_datetime_text = datetime.datetime.now().strftime("%Y-%m-%d / %H-%M-%S")
+            current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            current_datetime_text = datetime.now().strftime("%Y-%m-%d / %H-%M-%S")
             formatted_bssid_file = bssid.replace(":", "-")
 
             if type_save == "Update_new_wn":
@@ -739,6 +709,8 @@ class Companion:
             file_path = os.path.join(folder_OSP, file_name)
         
             location_hack = input(f" {Fore.LIGHTMAGENTA_EX}[{Fore.YELLOW}F{Fore.LIGHTRED_EX}S{Fore.LIGHTMAGENTA_EX}]{Fore.RESET} Введите локацию взлома :{Fore.LIGHTCYAN_EX} ")
+            if not location_hack:
+                location_hack = "Unknown"
             print(f"{Fore.RESET}")
             
             if type_save == "Update_new_wn":
@@ -1311,6 +1283,7 @@ Advanced arguments:
 
 
 if __name__ == '__main__':
+    banner()
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -1407,6 +1380,9 @@ if __name__ == '__main__':
         die(f"{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Данный скрипт может быть запущен от Python 3.6 и выше!")
     if os.getuid() != 0:
         die(f"{Fore.YELLOW}[{Fore.LIGHTRED_EX}!{Fore.YELLOW}]{Fore.RESET} Запустите скрипт с Root правами(Sudo su)!")
+
+    WLANX__toggle_android_wifi(enable=False)
+    WlanX__Mac_Change(args.interface, MACCHANGER_STARTUP_CHANGE)
 
     if not ifaceUp(args.interface):
         die('Не удалось включить интерфейс(wlan) "{}"'.format(args.interface))
